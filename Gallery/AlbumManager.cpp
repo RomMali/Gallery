@@ -308,6 +308,10 @@ void AlbumManager::removeUser()
 	if (isCurrentAlbumSet() && userId == m_openAlbum.getOwnerId()) {
 		closeAlbum();
 	}
+	
+	for (const Album& album : m_dataAccess.getAlbumsOfUser(user)) {
+		m_dataAccess.deleteAlbum(album.getName(), userId);
+	}
 
 	m_dataAccess.deleteUser(user);
 	std::cout << "User @" << userId << " deleted successfully." << std::endl;
