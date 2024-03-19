@@ -14,7 +14,7 @@ void MemoryAccess::printAlbums()
 	std::cout << "Album list:" << std::endl;
 	std::cout << "-----------" << std::endl;
 	for (const Album& album: m_albums) 	{
-		std::cout << std::setw(5) << "* " << album;
+		std::cout << "* [" << album.getName() << "] - created by user@" << album.getOwnerId() << " - created on " << album.getCreationDate() << std::endl;
 	}
 }
 
