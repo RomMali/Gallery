@@ -17,17 +17,17 @@ public:
 	void printAlbums();
 
 	// picture related
-	virtual void addPictureToAlbumByName(const std::string& albumName, const Picture& picture) = 0;
-	virtual void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName) = 0;
+	void addPictureToAlbumByName(const std::string& albumName, const Picture& picture);
+	void removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName);
 	void tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 	void untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 
 	// user related
-	virtual void printUsers() = 0;
-	virtual User getUser(int userId) = 0;
+	void printUsers();
+	User getUser(int userId);
 	void createUser(User& user) override;
 	void deleteUser(const User& user) override;
-	virtual bool doesUserExists(int userId) = 0;
+	bool doesUserExists(int userId);
 
 
 	// user statistics
