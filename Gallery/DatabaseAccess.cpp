@@ -9,6 +9,7 @@ bool albumExist;
 bool userExist;
 int album_id;
 std::string username;
+int count;
 
 DatabaseAccess::DatabaseAccess()
 {
@@ -377,4 +378,58 @@ int callbackUserExist(void* data, int argc, char** argv, char** azColName)
 {
 	userExist = true;
 	return 0;
+}
+
+int DatabaseAccess::countAlbumsOwnedOfUser(const User& user)
+{
+	std::string sqlStatement = "SELECT COUNT(*) FROM ALBUMS WHERE USER_ID = " + std::to_string(user.getId()) + ";";
+
+	int res = sqlite3_exec(db, sqlStatement.c_str(), callbackCount, nullptr, nullptr);
+	if (res != SQLITE_OK) {
+		return -1;
+	}
+	return count;
+}
+
+int callbackCount(void* data, int argc, char** argv, char** azColName)
+{
+	count = atoi(argv[0]);
+	return 0;
+}
+
+int DatabaseAccess::countAlbumsTaggedOfUser(const User& user)
+{
+	count = 0;
+	std::string sqlStatement = "SELECT COUNT(*) FROM TAGS INNER JOIN PICTURES ON TAGS.PICTURE_ID = PICTURES.ID INNER JOIN ALBUMS ON PICTURES.ALBUM_ID = ALBUMS.ID WHERE ALBUMS.USER_ID = " + std::to_string(user.getId()) + ";";
+
+	int res = sqlite3_exec(db, sqlStatement.c_str(), callbackCount, nullptr, nullptr);
+	if (res != SQLITE_OK) {
+		return -1;
+	}
+	return count;
+}
+
+float DatabaseAccess::averageTagsPerAlbumOfUser(const User& user)
+{
+	int totalTags = countTagsOfUser(user);
+	int totalAlbums = countAlbumsOwnedOfUser(user);
+
+	if (totalAlbums == 0) {
+		return 0; // to avoid division by zero
+	}
+
+	float res = float(totalTags) / totalAlbums;
+	return res;
+}
+
+int DatabaseAccess::countTagsOfUser(const User& user)
+{
+	count = 0;
+	std::string sqlStatement = "SELECT COUNT(*) FROM TAGS WHERE USER_ID = " + std::to_string(user.getId()) + ";";
+
+	int res = sqlite3_exec(db, sqlStatement.c_str(), callbackCount, nullptr, nullptr);
+	if (res != SQLITE_OK) {
+		return -1;
+	}
+	return count;
 }

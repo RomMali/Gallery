@@ -23,23 +23,23 @@ public:
 	void untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId) override;
 
 	// user related
-	void printUsers();
-	User getUser(int userId);
+	void printUsers() override;
+	User getUser(int userId) override;
 	void createUser(User& user) override;
 	void deleteUser(const User& user) override;
-	bool doesUserExists(int userId);
+	bool doesUserExists(int userId) override;
 
 
 	// user statistics
-	virtual int countAlbumsOwnedOfUser(const User& user) = 0;
-	virtual int countAlbumsTaggedOfUser(const User& user) = 0;
-	virtual int countTagsOfUser(const User& user) = 0;
-	virtual float averageTagsPerAlbumOfUser(const User& user) = 0;
+	int countAlbumsOwnedOfUser(const User& user) override;
+	int countAlbumsTaggedOfUser(const User& user) override;
+	int countTagsOfUser(const User& user) override;
+	float averageTagsPerAlbumOfUser(const User& user) override;
 
 	// queries
-	virtual User getTopTaggedUser() = 0;
-	virtual Picture getTopTaggedPicture() = 0;
-	virtual std::list<Picture> getTaggedPicturesOfUser(const User& user) = 0;
+	User getTopTaggedUser() override;
+	Picture getTopTaggedPicture() override;
+	std::list<Picture> getTaggedPicturesOfUser(const User& user) override;
 
 	DatabaseAccess();
 	bool open() override;
@@ -54,3 +54,7 @@ int callbackPic(void* data, int argc, char** argv, char** azColName);
 int callbackAlbums(void* data, int argc, char** argv, char** azColName);
 int callbackAlbumExist(void* data, int argc, char** argv, char** azColName);
 int callbackPrint(void* data, int argc, char** argv, char** azColName);
+int callbackCount(void* data, int argc, char** argv, char** azColName);
+int callbackPrintUser(void* data, int argc, char** argv, char** azColName);
+int callbackUser(void* data, int argc, char** argv, char** azColName);
+int callbackUserExist(void* data, int argc, char** argv, char** azColName);
