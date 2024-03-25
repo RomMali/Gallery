@@ -10,6 +10,12 @@ bool userExist;
 int album_id;
 std::string username;
 int count;
+int maxTags = 0;
+int userId;
+std::string pic_name;
+std::string pic_location;
+std::string pic_date;
+std::list<Picture> taggedPictures;
 
 DatabaseAccess::DatabaseAccess()
 {
@@ -42,7 +48,7 @@ bool DatabaseAccess::open()
 			return false;
 		
 		//PICTURES
-		const char* sqlStatement4 = "CREATE TABLE PICTURES (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, LOCATION TEXT NOT NULL, CREATION_DATE DATE NOT NULL, NAME TEXT NOT NULL, ALBUM_ID INT, FOREIGN KEY (ALBUM_ID) REFERENCES ALBUMS(ID)); ";
+		const char* sqlStatement4 = "CREATE TABLE PICTURES (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, NAME TEXT NOT NULL, LOCATION TEXT NOT NULL, CREATION_DATE DATE NOT NULL, ALBUM_ID INT, FOREIGN KEY (ALBUM_ID) REFERENCES ALBUMS(ID)); ";
 		res = sqlite3_exec(db, sqlStatement4, nullptr, nullptr, nullptr);
 		if (res != SQLITE_OK)
 			return false;
@@ -297,7 +303,7 @@ void DatabaseAccess::addPictureToAlbumByName(const std::string& albumName, const
 		if (res != SQLITE_OK)
 			return;
 
-		std::string sqlStatement = "UPDATE PICTURES SET ALBUM_ID = " + std::to_string(album_id) + " WHERE ID = " + std::to_string(picture.getId()) + ";";
+		std::string sqlStatement = "INSERT INTO PICTURES (NAME, LOCATION, CREATION_DATE, ALBUM_ID) VALUES (" + picture.getName() + ", " + picture.getPath() + ", " + picture.getCreationDate() + ", " + std::to_string(album_id) + ");";
 		res = sqlite3_exec(db, sqlStatement.c_str(), nullptr, nullptr, nullptr);
 		if (res != SQLITE_OK)
 			return;
@@ -432,4 +438,74 @@ int DatabaseAccess::countTagsOfUser(const User& user)
 		return -1;
 	}
 	return count;
+}
+
+User DatabaseAccess::getTopTaggedUser()
+{
+	std::string sqlStatement = "SELECT USERS.ID, USERS.NAME, COUNT(TAGS.ID) AS tag_count "
+		"FROM USERS "
+		"JOIN ALBUMS ON USERS.ID = ALBUMS.USER_ID "
+		"JOIN PICTURES ON ALBUMS.ID = PICTURES.ALBUM_ID "
+		"JOIN TAGS ON PICTURES.ID = TAGS.PICTURE_ID "
+		"GROUP BY USERS.ID "
+		"ORDER BY tag_count DESC "
+		"LIMIT 1;";
+
+	int res = sqlite3_exec(db, sqlStatement.c_str(), callbackTopTaggedUser, nullptr, nullptr);
+	return User(userId, username);
+}
+
+int callbackTopTaggedUser(void* data, int argc, char** argv, char** azColName)
+{
+	userId = std::stoi(argv[0]);
+	username = argv[1];
+	return 0;
+}
+
+Picture DatabaseAccess::getTopTaggedPicture()
+{
+	maxTags = 0;
+
+	std::string sqlStatement = "SELECT PICTURES.ID, PICTURES.NAME, COUNT(TAGS.ID) AS tag_count "
+		"FROM PICTURES "
+		"JOIN TAGS ON PICTURES.ID = TAGS.PICTURE_ID "
+		"GROUP BY PICTURES.ID "
+		"ORDER BY tag_count DESC "
+		"LIMIT 1;";
+
+	int res = sqlite3_exec(db, sqlStatement.c_str(), callbackTopTaggedPicture, nullptr, nullptr);
+
+	return Picture(pic_id, pic_name, pic_location, pic_date);
+}
+
+int callbackTopTaggedPicture(void* data, int argc, char** argv, char** azColName)
+{
+	pic_id = std::stoi(argv[0]);
+	pic_name = argv[1];
+	pic_date = argv[3];
+	pic_location = argv[2];
+	return 0;
+}
+
+std::list<Picture> DatabaseAccess::getTaggedPicturesOfUser(const User& user)
+{
+	taggedPictures.clear();
+	std::string sqlStatement = "SELECT PICTURES.ID, PICTURES.NAME, PICTURES.LOCATION, PICTURES.CREATION_DATE"
+							   "FROM PICTURES "
+							   "JOIN TAGS ON PICTURES.ID = TAGS.PICTURE_ID "
+							   "WHERE PICTURES.ID = TAGS.PICTURE_ID AND USER_ID = " + std::to_string(user.getId()) + ";";
+	int res = sqlite3_exec(db, sqlStatement.c_str(), callbackPictures, nullptr, nullptr);
+	return taggedPictures;
+}
+
+int callbackPictures(void* data, int argc, char** argv, char** azColName)
+{
+	int id = std::stoi(argv[0]);
+	std::string name = argv[1];
+	std::string location = argv[2];
+	std::string creationDate = argv[3];
+
+	Picture picture(id, name, location, creationDate);
+	taggedPictures.push_back(picture);
+	return 0;
 }

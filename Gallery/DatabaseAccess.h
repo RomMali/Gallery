@@ -58,3 +58,6 @@ int callbackCount(void* data, int argc, char** argv, char** azColName);
 int callbackPrintUser(void* data, int argc, char** argv, char** azColName);
 int callbackUser(void* data, int argc, char** argv, char** azColName);
 int callbackUserExist(void* data, int argc, char** argv, char** azColName);
+int callbackTopTaggedPicture(void* data, int argc, char** argv, char** azColName);
+int callbackTopTaggedUser(void* data, int argc, char** argv, char** azColName);
+int callbackPictures(void* data, int argc, char** argv, char** azColName);
